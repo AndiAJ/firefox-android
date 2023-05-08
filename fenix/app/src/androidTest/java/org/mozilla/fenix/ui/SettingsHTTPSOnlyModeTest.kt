@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.core.net.toUri
 import androidx.test.espresso.Espresso.pressBack
 import org.junit.Ignore
@@ -31,7 +32,19 @@ class SettingsHTTPSOnlyModeTest {
     private val httpsOnlyBackButton = "Go Back (Recommended)"
 
     @get:Rule
-    val activityTestRule = HomeActivityIntentTestRule.withDefaultSettingsOverrides(skipOnboarding = true)
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                isHomeOnboardingDialogEnabled = false,
+                isJumpBackInCFREnabled = false,
+                isRecentTabsFeatureEnabled = false,
+                isRecentlyVisitedFeatureEnabled = false,
+                isPocketEnabled = false,
+                isWallpaperOnboardingEnabled = false,
+                isTCPCFREnabled = false,
+                enableTabsTrayToCompose = true,
+            ),
+        ) { it.activity }
 
     @Test
     fun httpsOnlyModeMenuItemsTest() {
@@ -112,7 +125,7 @@ class SettingsHTTPSOnlyModeTest {
             verifyPageContent(httpsOnlyErrorTitle)
             clickPageObject(itemContainingText(httpsOnlyContinueButton))
             verifyPageContent("http.badssl.com")
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
         navigationToolbar {
@@ -182,7 +195,7 @@ class SettingsHTTPSOnlyModeTest {
             pressBack()
         }
         browserScreen {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
         homeScreen {

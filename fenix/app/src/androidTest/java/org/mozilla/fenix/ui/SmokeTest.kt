@@ -53,14 +53,8 @@ class SmokeTest {
     private val customMenuItem = "TestMenuItem"
     private lateinit var browserStore: BrowserStore
 
-    @get:Rule(order = 0)
-    val activityTestRule = AndroidComposeTestRule(
-        HomeActivityIntentTestRule.withDefaultSettingsOverrides(),
-        { it.activity },
-    )
-
     @get: Rule(order = 1)
-    val intentReceiverActivityTestRule = ActivityTestRule(
+    val intentReceivercomposeTestRule = ActivityTestRule(
         IntentReceiverActivity::class.java,
         true,
         false,
@@ -70,11 +64,19 @@ class SmokeTest {
     @JvmField
     val retryTestRule = RetryTestRule(3)
 
+    @get:Rule
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                enableTabsTrayToCompose = true,
+            ),
+        ) { it.activity }
+
     @Before
     fun setUp() {
         // Initializing this as part of class construction, below the rule would throw a NPE
         // So we are initializing this here instead of in all related tests.
-        browserStore = activityTestRule.activity.components.core.store
+        browserStore = composeTestRule.activity.components.core.store
 
         mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
         mockWebServer = MockWebServer().apply {
@@ -106,9 +108,9 @@ class SmokeTest {
                 verifyNavURLBarItems()
             }.openNavigationToolbar {
             }.goBackToWebsite {
-            }.openTabDrawer {
+            }.openTabDrawer(composeTestRule) {
                 verifyExistingTabList()
-            }.openNewTab {
+            }.openNewTab(composeTestRule) {
             }.dismissSearchBar {
                 verifyHomeScreen()
             }
@@ -140,8 +142,8 @@ class SmokeTest {
             }.openSearch {
                 verifyKeyboardVisibility()
                 clickSearchEngineShortcutButton()
-                verifySearchEngineList(activityTestRule)
-                changeDefaultSearchEngine(activityTestRule, searchEngine)
+                verifySearchEngineList(composeTestRule)
+                changeDefaultSearchEngine(composeTestRule, searchEngine)
                 verifySearchEngineIcon(searchEngine)
             }.submitQuery("mozilla ") {
                 verifyUrl(searchEngine)
@@ -158,13 +160,13 @@ class SmokeTest {
         }.openNavigationToolbar {
         }.enterURLAndEnterToBrowser(website.url) {
             mDevice.waitForIdle()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }.openTabDrawer {
         }.openRecentlyClosedTabs {
             waitForListToExist()
             registerAndCleanupIdlingResources(
-                RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.recently_closed_list), 1),
+                RecyclerViewIdlingResource(composeTestRule.activity.findViewById(R.id.recently_closed_list), 1),
             ) {
                 verifyRecentlyClosedTabsMenuView()
             }
@@ -182,13 +184,13 @@ class SmokeTest {
         }.openNavigationToolbar {
         }.enterURLAndEnterToBrowser(website.url) {
             mDevice.waitForIdle()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }.openTabDrawer {
         }.openRecentlyClosedTabs {
             waitForListToExist()
             registerAndCleanupIdlingResources(
-                RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.recently_closed_list), 1),
+                RecyclerViewIdlingResource(composeTestRule.activity.findViewById(R.id.recently_closed_list), 1),
             ) {
                 verifyRecentlyClosedTabsMenuView()
             }
@@ -256,11 +258,11 @@ class SmokeTest {
         }.openNavigationToolbar {
         }.enterURLAndEnterToBrowser(firstWebsite.url) {
             verifyPageContent(firstWebsite.content)
-        }.openTabDrawer {
-        }.openNewTab {
+        }.openTabDrawer(composeTestRule) {
+        }.openNewTab(composeTestRule) {
         }.submitQuery(secondWebsite.url.toString()) {
             verifyPageContent(secondWebsite.content)
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             verifyExistingOpenTabs("Test_Page_1")
             verifyExistingOpenTabs("Test_Page_2")
         }.openTabsListThreeDotMenu {
@@ -279,8 +281,8 @@ class SmokeTest {
     fun emptyTabsTrayViewPrivateBrowsingTest() {
         navigationToolbar {
         }.openTabTray {
-        }.toggleToPrivateTabs() {
-            verifyNormalBrowsingButtonIsSelected(false)
+        }.toggleToPrivateTabs {
+            verifyNormalModeSelected(composeTestRule, isSelected = false)
             verifyPrivateBrowsingButtonIsSelected(true)
             verifySyncedTabsButtonIsSelected(false)
             verifyNoOpenTabsInPrivateBrowsing()
@@ -300,8 +302,8 @@ class SmokeTest {
         homeScreen {
         }.openNavigationToolbar {
         }.enterURLAndEnterToBrowser(website.url) {
-        }.openTabDrawer {
-            verifyNormalBrowsingButtonIsSelected(false)
+        }.openTabDrawer(composeTestRule) {
+            verifyNormalModeSelected(composeTestRule, isSelected = false)
             verifyPrivateBrowsingButtonIsSelected(true)
             verifySyncedTabsButtonIsSelected(false)
             verifyTabTrayOverflowMenu(true)
@@ -363,7 +365,7 @@ class SmokeTest {
 
         registerAndCleanupIdlingResources(
             ViewVisibilityIdlingResource(
-                activityTestRule.activity.findViewById(R.id.mozac_browser_toolbar_page_actions),
+                composeTestRule.activity.findViewById(R.id.mozac_browser_toolbar_page_actions),
                 View.VISIBLE,
             ),
         ) {}
@@ -396,7 +398,7 @@ class SmokeTest {
     fun customTabMenuItemsTest() {
         val customTabPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
 
-        intentReceiverActivityTestRule.launchActivity(
+        intentReceivercomposeTestRule.launchActivity(
             createCustomTabIntent(
                 customTabPage.url.toString(),
                 customMenuItem,
@@ -422,7 +424,7 @@ class SmokeTest {
     fun openCustomTabInBrowserTest() {
         val customTabPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
 
-        intentReceiverActivityTestRule.launchActivity(
+        intentReceivercomposeTestRule.launchActivity(
             createCustomTabIntent(
                 customTabPage.url.toString(),
             ),
@@ -445,7 +447,7 @@ class SmokeTest {
             mDevice.waitForIdle()
             clickPageObject(itemWithText("Play"))
             assertPlaybackState(browserStore, MediaSession.PlaybackState.PLAYING)
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             verifyTabMediaControlButtonState("Pause")
             clickTabMediaControlButton("Pause")
             verifyTabMediaControlButtonState("Play")

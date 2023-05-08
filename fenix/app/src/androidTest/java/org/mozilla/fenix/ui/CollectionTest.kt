@@ -47,6 +47,7 @@ class CollectionTest {
                 isPocketEnabled = false,
                 isWallpaperOnboardingEnabled = false,
                 isTCPCFREnabled = false,
+                enableTabsTrayToCompose = true,
             ),
         ) { it.activity }
 
@@ -73,8 +74,8 @@ class CollectionTest {
         navigationToolbar {
         }.enterURLAndEnterToBrowser(firstWebPage.url) {
             mDevice.waitForIdle()
-        }.openTabDrawer {
-        }.openNewTab {
+        }.openTabDrawer(composeTestRule) {
+        }.openNewTab(composeTestRule) {
         }.submitQuery(secondWebPage.url.toString()) {
             mDevice.waitForIdle()
         }.goToHomescreen {
@@ -103,7 +104,7 @@ class CollectionTest {
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(webPage.url) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             createCollection(webPage.title, collectionName = collectionName)
             snackBarButtonClick("VIEW")
         }
@@ -154,11 +155,11 @@ class CollectionTest {
         navigationToolbar {
         }.enterURLAndEnterToBrowser(firstTestPage.url) {
             waitForPageToLoad()
-        }.openTabDrawer {
-        }.openNewTab {
+        }.openTabDrawer(composeTestRule) {
+        }.openNewTab(composeTestRule) {
         }.submitQuery(secondTestPage.url.toString()) {
             waitForPageToLoad()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             createCollection(
                 firstTestPage.title,
                 secondTestPage.title,
@@ -188,11 +189,11 @@ class CollectionTest {
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(firstWebsite.url) {
-        }.openTabDrawer {
-        }.openNewTab {
+        }.openTabDrawer(composeTestRule) {
+        }.openNewTab(composeTestRule) {
         }.submitQuery(secondWebsite.url.toString()) {
             waitForPageToLoad()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             createCollection(firstWebsite.title, secondWebsite.title, collectionName = collectionName)
             verifySnackBarText("Collection saved!")
         }.openTabsListThreeDotMenu {
@@ -215,7 +216,7 @@ class CollectionTest {
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(webPage.url) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             createCollection(webPage.title, collectionName = collectionName)
             snackBarButtonClick("VIEW")
         }
@@ -241,7 +242,7 @@ class CollectionTest {
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(firstWebPage.url) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             createCollection(firstWebPage.title, collectionName = collectionName)
             verifySnackBarText("Collection saved!")
         }.closeTabDrawer {}
@@ -268,7 +269,7 @@ class CollectionTest {
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(firstWebPage.url) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             createCollection(firstWebPage.title, collectionName = collectionName)
             verifySnackBarText("Collection saved!")
             closeTab()
@@ -294,7 +295,7 @@ class CollectionTest {
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(webPage.url) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             createCollection(webPage.title, collectionName = firstCollectionName)
             verifySnackBarText("Collection saved!")
         }.closeTabDrawer {
@@ -316,7 +317,7 @@ class CollectionTest {
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(webPage.url) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             createCollection(webPage.title, collectionName = firstCollectionName)
             verifySnackBarText("Collection saved!")
             createCollection(
@@ -338,7 +339,7 @@ class CollectionTest {
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(webPage.url) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             createCollection(webPage.title, collectionName = collectionName)
             closeTab()
         }
@@ -362,7 +363,7 @@ class CollectionTest {
         navigationToolbar {
         }.enterURLAndEnterToBrowser(testPage.url) {
             waitForPageToLoad()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             createCollection(
                 testPage.title,
                 collectionName = collectionName,
@@ -388,7 +389,7 @@ class CollectionTest {
         navigationToolbar {
         }.enterURLAndEnterToBrowser(testPage.url) {
             waitForPageToLoad()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             createCollection(
                 testPage.title,
                 collectionName = collectionName,
@@ -415,11 +416,11 @@ class CollectionTest {
         navigationToolbar {
         }.enterURLAndEnterToBrowser(firstWebPage.url) {
             waitForPageToLoad()
-        }.openTabDrawer {
-        }.openNewTab {
+        }.openTabDrawer(composeTestRule) {
+        }.openNewTab(composeTestRule) {
         }.submitQuery(secondWebPage.url.toString()) {
             waitForPageToLoad()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             verifyExistingOpenTabs(firstWebPage.title, secondWebPage.title)
             longClickTab(firstWebPage.title)
             verifyTabsMultiSelectionCounter(1)
@@ -444,7 +445,7 @@ class CollectionTest {
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(webPage.url) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             createCollection(webPage.title, collectionName = collectionName)
             verifySnackBarText("Collection saved!")
         }.closeTabDrawer {
@@ -477,7 +478,7 @@ class CollectionTest {
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(webPage.url) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             createCollection(webPage.title, collectionName = collectionName)
             snackBarButtonClick("VIEW")
         }

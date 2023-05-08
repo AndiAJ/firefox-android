@@ -6,6 +6,7 @@ package org.mozilla.fenix.ui
 
 import android.os.Build
 import android.view.autofill.AutofillManager
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.core.net.toUri
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
@@ -44,8 +45,19 @@ class LoginsTest {
     private lateinit var mockWebServer: MockWebServer
 
     @get:Rule
-    val activityTestRule =
-        HomeActivityIntentTestRule.withDefaultSettingsOverrides(skipOnboarding = true)
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                isHomeOnboardingDialogEnabled = false,
+                isJumpBackInCFREnabled = false,
+                isRecentTabsFeatureEnabled = false,
+                isRecentlyVisitedFeatureEnabled = false,
+                isPocketEnabled = false,
+                isWallpaperOnboardingEnabled = false,
+                isTCPCFREnabled = false,
+                enableTabsTrayToCompose = true,
+            ),
+        ) { it.activity }
 
     @Before
     fun setUp() {
@@ -297,7 +309,7 @@ class LoginsTest {
         }.openSavedLogins {
             tapSetupLater()
             viewSavedLoginDetails(originWebsite)
-            clickThreeDotButton(activityTestRule)
+            clickThreeDotButton(composeTestRule.activityRule)
             clickEditLoginButton()
             setNewPassword("fenix")
             saveEditedLogin()
@@ -325,7 +337,7 @@ class LoginsTest {
         }.openSavedLogins {
             tapSetupLater()
             viewSavedLoginDetails(originWebsite)
-            clickThreeDotButton(activityTestRule)
+            clickThreeDotButton(composeTestRule.activityRule)
             clickEditLoginButton()
             setNewUserName("android")
             setNewPassword("fenix")
@@ -362,7 +374,7 @@ class LoginsTest {
         }.openSavedLogins {
             tapSetupLater()
             viewSavedLoginDetails(originWebsite)
-            clickThreeDotButton(activityTestRule)
+            clickThreeDotButton(composeTestRule.activityRule)
             clickEditLoginButton()
             clickClearUserNameButton()
             saveEditedLogin()
@@ -389,7 +401,7 @@ class LoginsTest {
         }.openSavedLogins {
             tapSetupLater()
             viewSavedLoginDetails(originWebsite)
-            clickThreeDotButton(activityTestRule)
+            clickThreeDotButton(composeTestRule.activityRule)
             clickEditLoginButton()
             clickClearPasswordButton()
             verifyPasswordRequiredErrorMessage()
@@ -418,7 +430,7 @@ class LoginsTest {
         }.openSavedLogins {
             tapSetupLater()
             viewSavedLoginDetails(originWebsite)
-            clickThreeDotButton(activityTestRule)
+            clickThreeDotButton(composeTestRule.activityRule)
             clickEditLoginButton()
             setNewUserName("android")
             setNewPassword("fenix")
@@ -444,13 +456,13 @@ class LoginsTest {
         }.openSavedLogins {
             tapSetupLater()
             viewSavedLoginDetails("test@example.com")
-            clickThreeDotButton(activityTestRule)
+            clickThreeDotButton(composeTestRule.activityRule)
             clickDeleteLoginButton()
             verifyLoginDeletionPrompt()
             clickCancelDeleteLogin()
             verifyLoginItemUsername("test@example.com")
             viewSavedLoginDetails("test@example.com")
-            clickThreeDotButton(activityTestRule)
+            clickThreeDotButton(composeTestRule.activityRule)
             clickDeleteLoginButton()
             verifyLoginDeletionPrompt()
             clickConfirmDeleteLogin()
@@ -492,14 +504,14 @@ class LoginsTest {
             clickPageObject(itemWithResId("submit"))
             verifySaveLoginPromptIsDisplayed()
             clickPageObject(itemWithText("Save"))
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(loginPage.toUri()) {
             verifyPrefilledLoginCredentials("mozilla", "firefox", true)
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 
@@ -546,7 +558,7 @@ class LoginsTest {
             clickPageObject(itemWithResId("submit"))
             verifySaveLoginPromptIsDisplayed()
             clickPageObject(itemWithText("Save"))
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 
@@ -688,23 +700,23 @@ class LoginsTest {
             clickSavedLoginsChevronIcon()
             verifyLoginsSortingOptions()
             clickLastUsedSortingOption()
-            verifySortedLogin(activityTestRule, 0, originWebsite)
-            verifySortedLogin(activityTestRule, 1, firstLoginPage.url.authority.toString())
+            verifySortedLogin(composeTestRule.activityRule, 0, originWebsite)
+            verifySortedLogin(composeTestRule.activityRule, 1, firstLoginPage.url.authority.toString())
         }.goBack {
         }.openSavedLogins {
-            verifySortedLogin(activityTestRule, 0, originWebsite)
-            verifySortedLogin(activityTestRule, 1, firstLoginPage.url.authority.toString())
+            verifySortedLogin(composeTestRule.activityRule, 0, originWebsite)
+            verifySortedLogin(composeTestRule.activityRule, 1, firstLoginPage.url.authority.toString())
         }
 
-        restartApp(activityTestRule)
+        restartApp(composeTestRule.activityRule)
 
         browserScreen {
         }.openThreeDotMenu {
         }.openSettings {
         }.openLoginsAndPasswordSubMenu {
         }.openSavedLogins {
-            verifySortedLogin(activityTestRule, 0, originWebsite)
-            verifySortedLogin(activityTestRule, 1, firstLoginPage.url.authority.toString())
+            verifySortedLogin(composeTestRule.activityRule, 0, originWebsite)
+            verifySortedLogin(composeTestRule.activityRule, 1, firstLoginPage.url.authority.toString())
         }
     }
 
@@ -732,23 +744,23 @@ class LoginsTest {
         }.openLoginsAndPasswordSubMenu {
         }.openSavedLogins {
             tapSetupLater()
-            verifySortedLogin(activityTestRule, 0, firstLoginPage.url.authority.toString())
-            verifySortedLogin(activityTestRule, 1, originWebsite)
+            verifySortedLogin(composeTestRule.activityRule, 0, firstLoginPage.url.authority.toString())
+            verifySortedLogin(composeTestRule.activityRule, 1, originWebsite)
         }.goBack {
         }.openSavedLogins {
-            verifySortedLogin(activityTestRule, 0, firstLoginPage.url.authority.toString())
-            verifySortedLogin(activityTestRule, 1, originWebsite)
+            verifySortedLogin(composeTestRule.activityRule, 0, firstLoginPage.url.authority.toString())
+            verifySortedLogin(composeTestRule.activityRule, 1, originWebsite)
         }
 
-        restartApp(activityTestRule)
+        restartApp(composeTestRule.activityRule)
 
         browserScreen {
         }.openThreeDotMenu {
         }.openSettings {
         }.openLoginsAndPasswordSubMenu {
         }.openSavedLogins {
-            verifySortedLogin(activityTestRule, 0, firstLoginPage.url.authority.toString())
-            verifySortedLogin(activityTestRule, 1, originWebsite)
+            verifySortedLogin(composeTestRule.activityRule, 0, firstLoginPage.url.authority.toString())
+            verifySortedLogin(composeTestRule.activityRule, 1, originWebsite)
         }
     }
 

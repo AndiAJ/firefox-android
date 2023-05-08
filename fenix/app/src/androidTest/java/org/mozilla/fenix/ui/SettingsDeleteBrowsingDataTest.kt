@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
@@ -37,7 +38,19 @@ class SettingsDeleteBrowsingDataTest {
     private lateinit var mockWebServer: MockWebServer
 
     @get:Rule
-    val activityTestRule = HomeActivityIntentTestRule.withDefaultSettingsOverrides(skipOnboarding = true)
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                isHomeOnboardingDialogEnabled = false,
+                isJumpBackInCFREnabled = false,
+                isRecentTabsFeatureEnabled = false,
+                isRecentlyVisitedFeatureEnabled = false,
+                isPocketEnabled = false,
+                isWallpaperOnboardingEnabled = false,
+                isTCPCFREnabled = false,
+                enableTabsTrayToCompose = true,
+            ),
+        ) { it.activity }
 
     @Before
     fun setUp() {
@@ -69,7 +82,7 @@ class SettingsDeleteBrowsingDataTest {
             verifyDownloadsCheckBox(true)
         }
 
-        restartApp(activityTestRule)
+        restartApp(composeTestRule.activityRule)
 
         homeScreen {
         }.openThreeDotMenu {
@@ -95,7 +108,7 @@ class SettingsDeleteBrowsingDataTest {
             verifyDownloadsCheckBox(false)
         }
 
-        restartApp(activityTestRule)
+        restartApp(composeTestRule.activityRule)
 
         homeScreen {
         }.openThreeDotMenu {
@@ -155,7 +168,7 @@ class SettingsDeleteBrowsingDataTest {
         }.goBack {
         }.goBack {
         }.openTabDrawer {
-            verifyNoOpenTabsInNormalBrowsing()
+            verifyNoOpenTabsInNormalBrowsing(composeTestRule)
         }
     }
 
@@ -238,8 +251,8 @@ class SettingsDeleteBrowsingDataTest {
             verifyExistingTopSitesTabs(pocketTopArticles)
         }.openTopSiteTabWithTitle(pocketTopArticles) {
             waitForPageToLoad()
-        }.openTabDrawer {
-        }.openNewTab {
+        }.openTabDrawer(composeTestRule) {
+        }.openNewTab(composeTestRule) {
         }.submitQuery("about:cache") {
             // disabling wifi to prevent downloads in the background
             setNetworkEnabled(enabled = false)

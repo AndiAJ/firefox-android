@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
@@ -24,7 +25,19 @@ class SettingsPrivateBrowsingTest {
     private val pageShortcutName = TestHelper.generateRandomString(5)
 
     @get:Rule
-    val activityTestRule = HomeActivityIntentTestRule.withDefaultSettingsOverrides(skipOnboarding = true)
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                isHomeOnboardingDialogEnabled = false,
+                isJumpBackInCFREnabled = false,
+                isRecentTabsFeatureEnabled = false,
+                isRecentlyVisitedFeatureEnabled = false,
+                isPocketEnabled = false,
+                isWallpaperOnboardingEnabled = false,
+                isTCPCFREnabled = false,
+                enableTabsTrayToCompose = true,
+            ),
+        ) { it.activity }
 
     @Before
     fun setUp() {
@@ -64,7 +77,7 @@ class SettingsPrivateBrowsingTest {
 
         browserScreen {
             verifyUrl(firstWebPage.url.toString())
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             verifyPrivateModeSelected()
         }.closeTabDrawer {
         }.goToHomescreen { }
@@ -76,8 +89,8 @@ class SettingsPrivateBrowsingTest {
 
         browserScreen {
             verifyUrl(secondWebPage.url.toString())
-        }.openTabDrawer {
-            verifyNormalModeSelected()
+        }.openTabDrawer(composeTestRule) {
+            verifyNormalModeSelected(composeTestRule)
         }
     }
 
@@ -99,15 +112,15 @@ class SettingsPrivateBrowsingTest {
 
         mDevice.waitForIdle()
         // We need to close the existing tab here, to open a different session
-        TestHelper.restartApp(activityTestRule)
+        TestHelper.restartApp(composeTestRule.activityRule)
         browserScreen {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 
         addToHomeScreen {
         }.searchAndOpenHomeScreenShortcut(pageShortcutName) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             verifyPrivateModeSelected()
         }
     }
@@ -130,13 +143,13 @@ class SettingsPrivateBrowsingTest {
         }.goToHomescreen { }
 
         setOpenLinksInPrivateOff()
-        TestHelper.restartApp(activityTestRule)
+        TestHelper.restartApp(composeTestRule.activityRule)
         mDevice.waitForIdle()
 
         addToHomeScreen {
         }.searchAndOpenHomeScreenShortcut(pageShortcutName) {
-        }.openTabDrawer {
-            verifyNormalModeSelected()
+        }.openTabDrawer(composeTestRule) {
+            verifyNormalModeSelected(composeTestRule)
         }.closeTabDrawer {
         }.openThreeDotMenu {
         }.openSettings {
@@ -157,7 +170,7 @@ class SettingsPrivateBrowsingTest {
         }.openPrivateBrowsingShortcut {
             verifySearchView()
         }.openBrowser {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             verifyPrivateModeSelected()
         }
     }

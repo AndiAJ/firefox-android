@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.tabstray
 
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +25,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -47,6 +53,10 @@ import org.mozilla.fenix.tabstray.syncedtabs.SyncedTabsList
 import org.mozilla.fenix.tabstray.syncedtabs.SyncedTabsListItem
 import org.mozilla.fenix.theme.FirefoxTheme
 import mozilla.components.browser.storage.sync.Tab as SyncTab
+
+@VisibleForTesting
+internal const val emptyNormalTabListTestTag = "tabstray.list.normal.empty"
+internal const val emptyPrivateTabListTestTag = "tabstray.list.private.empty"
 
 /**
  * Top-level UI for displaying the Tabs Tray feature.
@@ -328,22 +338,26 @@ private fun SyncedTabsPage(
 
 @Composable
 private fun EmptyTabPage(isPrivate: Boolean) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Text(
-            text = stringResource(
-                id = if (isPrivate) {
-                    R.string.no_private_tabs_description
-                } else {
-                    R.string.no_open_tabs_description
-                },
-            ),
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 80.dp),
-            color = FirefoxTheme.colors.textSecondary,
-            style = FirefoxTheme.typography.body1,
-        )
-    }
+    Text(
+        text = stringResource(
+            id = if (isPrivate) {
+                R.string.no_private_tabs_description
+            } else {
+                R.string.no_open_tabs_description
+            },
+        ),
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .padding(top = 80.dp)
+            .fillMaxSize()
+            .testTag(if (isPrivate) {
+                emptyPrivateTabListTestTag
+            } else {
+                emptyNormalTabListTestTag
+            }),
+        color = FirefoxTheme.colors.textSecondary,
+        style = FirefoxTheme.typography.body1,
+    )
 }
 
 @LightDarkPreview

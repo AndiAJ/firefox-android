@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.core.net.toUri
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -45,16 +46,28 @@ class ContextMenusTest {
     private lateinit var mDevice: UiDevice
     private lateinit var mockWebServer: MockWebServer
 
-    @get:Rule
-    val activityIntentTestRule = HomeActivityIntentTestRule.withDefaultSettingsOverrides()
-
     @Rule
     @JvmField
     val retryTestRule = RetryTestRule(3)
 
+    @get:Rule
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                isHomeOnboardingDialogEnabled = false,
+                isJumpBackInCFREnabled = false,
+                isRecentTabsFeatureEnabled = false,
+                isRecentlyVisitedFeatureEnabled = false,
+                isPocketEnabled = false,
+                isWallpaperOnboardingEnabled = false,
+                isTCPCFREnabled = false,
+                enableTabsTrayToCompose = true,
+            ),
+        ) { it.activity }
+
     @Before
     fun setUp() {
-        activityIntentTestRule.activity.applicationContext.settings().shouldShowJumpBackInCFR = false
+        composeTestRule.activityRule.activity.applicationContext.settings().shouldShowJumpBackInCFR = false
         mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
         mockWebServer = MockWebServer().apply {
             dispatcher = AndroidAssetDispatcher()
@@ -84,8 +97,8 @@ class ContextMenusTest {
             verifySnackBarText("New tab opened")
             clickSnackbarButton("SWITCH")
             verifyUrl(genericURL.url.toString())
-        }.openTabDrawer {
-            verifyNormalModeSelected()
+        }.openTabDrawer(composeTestRule) {
+            verifyNormalModeSelected(composeTestRule)
             verifyExistingOpenTabs("Test_Page_1")
             verifyExistingOpenTabs("Test_Page_4")
         }
@@ -108,7 +121,7 @@ class ContextMenusTest {
             verifySnackBarText("New private tab opened")
             clickSnackbarButton("SWITCH")
             verifyUrl(genericURL.url.toString())
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             verifyPrivateModeSelected()
             verifyExistingOpenTabs("Test_Page_2")
         }
@@ -148,8 +161,8 @@ class ContextMenusTest {
         }.openNavigationToolbar {
         }.visitLinkFromClipboard {
             verifyUrl(genericURL.url.toString())
-        }.openTabDrawer {
-        }.openNewTab {
+        }.openTabDrawer(composeTestRule) {
+        }.openNewTab(composeTestRule) {
         }
         navigationToolbar {
             verifyClipboardSuggestionsAreDisplayed(shouldBeDisplayed = false)

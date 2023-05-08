@@ -33,6 +33,7 @@ class CrashReportingTest {
             isJumpBackInCFREnabled = false,
             isWallpaperOnboardingEnabled = false,
             isTCPCFREnabled = false,
+            enableTabsTrayToCompose = true,
         ),
     ) { it.activity }
 
@@ -57,7 +58,7 @@ class CrashReportingTest {
         }.openTabCrashReporter {
         }.clickTabCrashedCloseButton {
         }.openTabDrawer {
-            verifyNoOpenTabsInNormalBrowsing()
+            verifyNoOpenTabsInNormalBrowsing(activityTestRule)
         }
     }
 
@@ -88,8 +89,8 @@ class CrashReportingTest {
         }.openNavigationToolbar {
         }.enterURLAndEnterToBrowser(firstWebPage.url) {
             mDevice.waitForIdle()
-        }.openTabDrawer {
-        }.openNewTab {
+        }.openTabDrawer(activityTestRule) {
+        }.openNewTab(activityTestRule) {
         }.submitQuery(secondWebPage.url.toString()) {
             waitForPageToLoad()
         }
@@ -97,7 +98,7 @@ class CrashReportingTest {
         navigationToolbar {
         }.openTabCrashReporter {
             verifyPageContent(tabCrashMessage)
-        }.openTabDrawer {
+        }.openTabDrawer(activityTestRule) {
             verifyExistingOpenTabs(firstWebPage.title)
             verifyExistingOpenTabs(secondWebPage.title)
         }.closeTabDrawer {
@@ -119,8 +120,8 @@ class CrashReportingTest {
         }.openNavigationToolbar {
         }.enterURLAndEnterToBrowser(firstWebPage.url) {
             mDevice.waitForIdle()
-        }.openTabDrawer {
-        }.openNewTab {
+        }.openTabDrawer(activityTestRule) {
+        }.openNewTab(activityTestRule) {
         }.submitQuery(secondWebPage.url.toString()) {
             waitForPageToLoad()
         }
@@ -128,7 +129,7 @@ class CrashReportingTest {
         navigationToolbar {
         }.openTabCrashReporter {
             verifyPageContent(tabCrashMessage)
-        }.openTabDrawer {
+        }.openTabDrawer(activityTestRule) {
             verifyExistingOpenTabs(firstWebPage.title)
             verifyExistingOpenTabs(secondWebPage.title)
         }.closeTabDrawer {

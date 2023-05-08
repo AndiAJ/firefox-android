@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.core.net.toUri
 import androidx.test.espresso.Espresso.pressBack
 import okhttp3.mockwebserver.MockWebServer
@@ -44,11 +45,19 @@ class EnhancedTrackingProtectionTest {
     private lateinit var mockWebServer: MockWebServer
 
     @get:Rule
-    val activityTestRule = HomeActivityIntentTestRule(
-        isJumpBackInCFREnabled = false,
-        isTCPCFREnabled = false,
-        isWallpaperOnboardingEnabled = false,
-    )
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                isHomeOnboardingDialogEnabled = false,
+                isJumpBackInCFREnabled = false,
+                isRecentTabsFeatureEnabled = false,
+                isRecentlyVisitedFeatureEnabled = false,
+                isPocketEnabled = false,
+                isWallpaperOnboardingEnabled = false,
+                isTCPCFREnabled = false,
+                enableTabsTrayToCompose = true,
+            ),
+        ) { it.activity }
 
     @Before
     fun setUp() {
@@ -175,7 +184,7 @@ class EnhancedTrackingProtectionTest {
         }.toggleEnhancedTrackingProtectionFromSheet {
             verifyEnhancedTrackingProtectionSheetStatus("OFF", false)
         }
-        restartApp(activityTestRule)
+        restartApp(composeTestRule.activityRule)
         enhancedTrackingProtection {
         }.openEnhancedTrackingProtectionSheet {
             verifyEnhancedTrackingProtectionSheetStatus("OFF", false)
@@ -289,7 +298,7 @@ class EnhancedTrackingProtectionTest {
         // browsing a generic page to allow GV to load on a fresh run
         navigationToolbar {
         }.enterURLAndEnterToBrowser(genericPage.url) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 

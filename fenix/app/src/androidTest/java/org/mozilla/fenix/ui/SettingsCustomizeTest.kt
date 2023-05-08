@@ -1,6 +1,7 @@
 package org.mozilla.fenix.ui
 
 import android.content.res.Configuration
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
@@ -19,7 +20,19 @@ class SettingsCustomizeTest {
     private lateinit var mockWebServer: MockWebServer
 
     @get:Rule
-    val activityIntentTestRule = HomeActivityIntentTestRule.withDefaultSettingsOverrides()
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                isHomeOnboardingDialogEnabled = false,
+                isJumpBackInCFREnabled = false,
+                isRecentTabsFeatureEnabled = false,
+                isRecentlyVisitedFeatureEnabled = false,
+                isPocketEnabled = false,
+                isWallpaperOnboardingEnabled = false,
+                isTCPCFREnabled = false,
+                enableTabsTrayToCompose = true,
+            ),
+        ) { it.activity }
 
     @Before
     fun setUp() {
@@ -36,7 +49,7 @@ class SettingsCustomizeTest {
 
     private fun getUiTheme(): Boolean {
         val mode =
-            activityIntentTestRule.activity.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK)
+            composeTestRule.activity.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK)
 
         return when (mode) {
             Configuration.UI_MODE_NIGHT_YES -> true // dark theme is set
@@ -100,8 +113,8 @@ class SettingsCustomizeTest {
         }
         navigationToolbar {
         }.enterURLAndEnterToBrowser(firstWebPage.url) {
-        }.openTabDrawer {
-        }.openNewTab {
+        }.openTabDrawer(composeTestRule) {
+        }.openNewTab(composeTestRule) {
         }.submitQuery(secondWebPage.url.toString()) {
             swipeNavBarRight(secondWebPage.url.toString())
             verifyUrl(secondWebPage.url.toString())

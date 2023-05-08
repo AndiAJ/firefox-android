@@ -5,6 +5,7 @@
 package org.mozilla.fenix.ui
 
 import android.Manifest
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.core.net.toUri
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.rule.GrantPermissionRule
@@ -46,6 +47,21 @@ class SettingsDeleteBrowsingDataOnQuitTest {
     val grantPermissionRule: GrantPermissionRule = GrantPermissionRule.grant(
         Manifest.permission.RECORD_AUDIO,
     )
+
+    @get:Rule
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                isHomeOnboardingDialogEnabled = false,
+                isJumpBackInCFREnabled = false,
+                isRecentTabsFeatureEnabled = false,
+                isRecentlyVisitedFeatureEnabled = false,
+                isPocketEnabled = false,
+                isWallpaperOnboardingEnabled = false,
+                isTCPCFREnabled = false,
+                enableTabsTrayToCompose = true,
+            ),
+        ) { it.activity }
 
     @Before
     fun setUp() {
@@ -108,7 +124,7 @@ class SettingsDeleteBrowsingDataOnQuitTest {
         }
         navigationToolbar {
         }.openTabTray {
-            verifyNoOpenTabsInNormalBrowsing()
+            verifyNoOpenTabsInNormalBrowsing(composeTestRule)
         }
     }
 

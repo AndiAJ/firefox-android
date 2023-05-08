@@ -7,6 +7,7 @@
 package org.mozilla.fenix.screenshots
 
 import android.os.SystemClock
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
@@ -21,6 +22,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.R
 import org.mozilla.fenix.helpers.AndroidAssetDispatcher
+import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
 import org.mozilla.fenix.helpers.HomeActivityTestRule
 import org.mozilla.fenix.helpers.TestAssetHelper
 import org.mozilla.fenix.helpers.TestHelper.mDevice
@@ -42,7 +44,19 @@ class MenuScreenShotTest : ScreenshotTest() {
     val localeTestRule = LocaleTestRule()
 
     @get:Rule
-    var mActivityTestRule = HomeActivityTestRule.withDefaultSettingsOverrides()
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                isHomeOnboardingDialogEnabled = false,
+                isJumpBackInCFREnabled = false,
+                isRecentTabsFeatureEnabled = false,
+                isRecentlyVisitedFeatureEnabled = false,
+                isPocketEnabled = false,
+                isWallpaperOnboardingEnabled = false,
+                isTCPCFREnabled = false,
+                enableTabsTrayToCompose = true,
+            ),
+        ) { it.activity }
 
     @Before
     fun setUp() {
@@ -55,7 +69,7 @@ class MenuScreenShotTest : ScreenshotTest() {
 
     @After
     fun tearDown() {
-        mActivityTestRule.getActivity().finishAndRemoveTask()
+        composeTestRule.activityRule.activity.finishAndRemoveTask()
         mockWebServer.shutdown()
     }
 
@@ -153,7 +167,7 @@ class MenuScreenShotTest : ScreenshotTest() {
             Screengrab.screenshot("NavigationToolbarRobot_navigation-toolbar")
         }.enterURLAndEnterToBrowser(defaultWebPage.url) {
             Screengrab.screenshot("BrowserRobot_enter-url")
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             TestAssetHelper.waitingTime
             Screengrab.screenshot("TabDrawerRobot_one-tab-open")
         }.openTabsListThreeDotMenu {
@@ -170,7 +184,7 @@ class MenuScreenShotTest : ScreenshotTest() {
         }.openThreeDotMenu {
             Screengrab.screenshot("TabDrawerRobot_browser-tab-menu")
         }.closeBrowserMenuToBrowser {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             Screengrab.screenshot("TabDrawerRobot_tab-drawer-with-tabs")
             closeTab()
             TestAssetHelper.waitingTime

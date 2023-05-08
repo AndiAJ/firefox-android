@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.tabstray
 
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,9 +36,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -52,6 +56,11 @@ import org.mozilla.fenix.compose.annotation.LightDarkPreview
 import org.mozilla.fenix.theme.FirefoxTheme
 
 private val ICON_SIZE = 24.dp
+
+@VisibleForTesting
+internal const val normalTabsPageTestTag = "tabstray.banner.normaltabs"
+internal const val priateTabsPageTestTag = "tabstray.banner.privatetabs"
+internal const val syncedTabsPageTestTag = "tabstray.banner.syncedtabs"
 
 /**
  * Top-level UI for displaying the banner in [TabsTray].
@@ -127,7 +136,9 @@ private fun SingleSelectBanner(
                     Tab(
                         selected = selectedPage == Page.NormalTabs,
                         onClick = { onTabPageIndicatorClicked(Page.NormalTabs) },
-                        modifier = Modifier.fillMaxHeight(),
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .testTag(normalTabsPageTestTag),
                         selectedContentColor = selectedColor,
                         unselectedContentColor = inactiveColor,
                     ) {
@@ -197,12 +208,16 @@ private fun NormalTabsTabIcon(normalTabCount: Int) {
         stringResource(id = R.string.mozac_tab_counter_open_tab_tray_plural, normalTabCount.toString())
     }
 
-    Box {
+    Box(
+        modifier = Modifier.semantics(mergeDescendants = true){
+            contentDescription = normalTabsContentDescription
+        }
+    ) {
         Icon(
             painter = painterResource(
                 id = mozilla.components.ui.tabcounter.R.drawable.mozac_ui_tabcounter_box,
             ),
-            contentDescription = normalTabsContentDescription,
+            contentDescription = null,
             modifier = Modifier.align(Alignment.Center),
         )
 

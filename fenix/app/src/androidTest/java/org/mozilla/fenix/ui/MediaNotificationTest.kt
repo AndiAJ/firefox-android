@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import mozilla.components.browser.state.store.BrowserStore
@@ -16,6 +17,7 @@ import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.helpers.AndroidAssetDispatcher
+import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
 import org.mozilla.fenix.helpers.HomeActivityTestRule
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithText
 import org.mozilla.fenix.helpers.RetryTestRule
@@ -38,19 +40,32 @@ class MediaNotificationTest {
     private lateinit var mockWebServer: MockWebServer
     private lateinit var mDevice: UiDevice
 
-    @get:Rule
-    val activityTestRule = HomeActivityTestRule.withDefaultSettingsOverrides()
     private lateinit var browserStore: BrowserStore
 
     @Rule
     @JvmField
     val retryTestRule = RetryTestRule(3)
 
+    @get:Rule
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                isHomeOnboardingDialogEnabled = false,
+                isJumpBackInCFREnabled = false,
+                isRecentTabsFeatureEnabled = false,
+                isRecentlyVisitedFeatureEnabled = false,
+                isPocketEnabled = false,
+                isWallpaperOnboardingEnabled = false,
+                isTCPCFREnabled = false,
+                enableTabsTrayToCompose = true,
+            ),
+        ) { it.activity }
+
     @Before
     fun setUp() {
         // Initializing this as part of class construction, below the rule would throw a NPE
         // So we are initializing this here instead of in all tests.
-        browserStore = activityTestRule.activity.components.core.store
+        browserStore = composeTestRule.activityRule.activity.components.core.store
 
         mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
         mockWebServer = MockWebServer().apply {
@@ -84,7 +99,7 @@ class MediaNotificationTest {
 
         browserScreen {
             assertPlaybackState(browserStore, MediaSession.PlaybackState.PAUSED)
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 
@@ -118,7 +133,7 @@ class MediaNotificationTest {
 
         browserScreen {
             assertPlaybackState(browserStore, MediaSession.PlaybackState.PAUSED)
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 
@@ -139,7 +154,7 @@ class MediaNotificationTest {
         navigationToolbar {
         }.openTabTray {
         }.toggleToPrivateTabs {
-        }.openNewTab {
+        }.openNewTab(composeTestRule) {
         }.submitQuery(audioTestPage.url.toString()) {
             mDevice.waitForIdle()
             clickPageObject(itemWithText("Play"))
@@ -154,7 +169,7 @@ class MediaNotificationTest {
 
         browserScreen {
             assertPlaybackState(browserStore, MediaSession.PlaybackState.PAUSED)
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
             verifySnackBarText("Private tab closed")
         }

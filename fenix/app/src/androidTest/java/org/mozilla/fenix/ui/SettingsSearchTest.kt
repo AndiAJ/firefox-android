@@ -29,9 +29,19 @@ class SettingsSearchTest {
     private lateinit var searchMockServer: MockWebServer
 
     @get:Rule
-    val activityTestRule = AndroidComposeTestRule(
-        HomeActivityIntentTestRule.withDefaultSettingsOverrides(),
-    ) { it.activity }
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                isHomeOnboardingDialogEnabled = false,
+                isJumpBackInCFREnabled = false,
+                isRecentTabsFeatureEnabled = false,
+                isRecentlyVisitedFeatureEnabled = false,
+                isPocketEnabled = false,
+                isWallpaperOnboardingEnabled = false,
+                isTCPCFREnabled = false,
+                enableTabsTrayToCompose = true,
+            ),
+        ) { it.activity }
 
     @Before
     fun setUp() {
@@ -106,7 +116,7 @@ class SettingsSearchTest {
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(page1.url) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 
@@ -114,14 +124,14 @@ class SettingsSearchTest {
         }.openSearch {
             typeSearch("test")
             verifyFirefoxSuggestResults(
-                activityTestRule,
+                composeTestRule,
                 "test",
                 "Firefox Suggest",
                 "Test_Page_1",
             )
         }.clickSearchSuggestion("Test_Page_1") {
             verifyUrl(page1.url.toString())
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 
@@ -129,7 +139,7 @@ class SettingsSearchTest {
         }.enterURLAndEnterToBrowser(page2.url) {
         }.openThreeDotMenu {
         }.bookmarkPage {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 
@@ -146,14 +156,14 @@ class SettingsSearchTest {
         }.openSearch {
             typeSearch("test")
             verifyFirefoxSuggestResults(
-                activityTestRule,
+                composeTestRule,
                 "test",
                 "Firefox Suggest",
                 "Test_Page_2",
             )
         }.clickSearchSuggestion("Test_Page_2") {
             verifyUrl(page2.url.toString())
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 
@@ -171,7 +181,7 @@ class SettingsSearchTest {
         }.openSearch {
             typeSearch("test")
             verifyNoSuggestionsAreDisplayed(
-                activityTestRule,
+                composeTestRule,
                 "Firefox Suggest",
                 "Test_Page_1",
                 "Test_Page_2",
@@ -198,8 +208,8 @@ class SettingsSearchTest {
         }.openSearch {
             verifyKeyboardVisibility()
             clickSearchEngineShortcutButton()
-            verifyEnginesListShortcutContains(activityTestRule, searchEngine)
-            changeDefaultSearchEngine(activityTestRule, searchEngine)
+            verifyEnginesListShortcutContains(composeTestRule, searchEngine)
+            changeDefaultSearchEngine(composeTestRule, searchEngine)
         }.submitQuery("mozilla ") {
             verifyUrl(searchEngine)
         }.openThreeDotMenu {
@@ -245,7 +255,7 @@ class SettingsSearchTest {
         }.openSearch {
             verifyDefaultSearchEngine(searchEngine.newTitle)
             clickSearchEngineShortcutButton()
-            verifyEnginesListShortcutContains(activityTestRule, searchEngine.newTitle)
+            verifyEnginesListShortcutContains(composeTestRule, searchEngine.newTitle)
         }
     }
 
@@ -259,7 +269,7 @@ class SettingsSearchTest {
         homeScreen {
         }.openSearch {
             typeSearch("mozilla")
-            verifySearchEngineSuggestionResults(activityTestRule, "mozilla firefox")
+            verifySearchEngineSuggestionResults(composeTestRule, "mozilla firefox")
         }.dismissSearchBar {
         }.openThreeDotMenu {
         }.openSettings {
@@ -269,7 +279,7 @@ class SettingsSearchTest {
         }.goBack {
         }.openSearch {
             typeSearch("mozilla")
-            verifyNoSuggestionsAreDisplayed(activityTestRule, "mozilla firefox")
+            verifyNoSuggestionsAreDisplayed(composeTestRule, "mozilla firefox")
         }
     }
 
@@ -282,12 +292,12 @@ class SettingsSearchTest {
             typeSearch("mozilla")
             verifyAllowSuggestionsInPrivateModeDialog()
             denySuggestionsInPrivateMode()
-            verifyNoSuggestionsAreDisplayed(activityTestRule, "mozilla firefox")
+            verifyNoSuggestionsAreDisplayed(composeTestRule, "mozilla firefox")
         }.dismissSearchBar {
             togglePrivateBrowsingModeOnOff()
         }.openSearch {
             typeSearch("mozilla")
-            verifySearchEngineSuggestionResults(activityTestRule, "mozilla firefox")
+            verifySearchEngineSuggestionResults(composeTestRule, "mozilla firefox")
         }
     }
 
@@ -300,7 +310,7 @@ class SettingsSearchTest {
             typeSearch("mozilla")
             verifyAllowSuggestionsInPrivateModeDialog()
             allowSuggestionsInPrivateMode()
-            verifySearchEngineSuggestionResults(activityTestRule, "mozilla firefox")
+            verifySearchEngineSuggestionResults(composeTestRule, "mozilla firefox")
         }.dismissSearchBar {
         }.openThreeDotMenu {
         }.openSettings {
@@ -310,7 +320,7 @@ class SettingsSearchTest {
         }.goBack {
         }.openSearch {
             typeSearch("mozilla")
-            verifyNoSuggestionsAreDisplayed(activityTestRule, "mozilla firefox")
+            verifyNoSuggestionsAreDisplayed(composeTestRule, "mozilla firefox")
         }
     }
 
@@ -443,8 +453,8 @@ class SettingsSearchTest {
         homeScreen {
         }.openSearch {
             typeSearch("D")
-            verifySearchEnginePrompt(activityTestRule, "DuckDuckGo")
-            clickSearchEnginePrompt(activityTestRule, "DuckDuckGo")
+            verifySearchEnginePrompt(composeTestRule, "DuckDuckGo")
+            clickSearchEnginePrompt(composeTestRule, "DuckDuckGo")
         }.submitQuery("firefox") {
             verifyUrl("duckduckgo.com/?q=firefox")
         }
@@ -462,7 +472,7 @@ class SettingsSearchTest {
         }.openLanguageSubMenu {
             TestHelper.registerAndCleanupIdlingResources(
                 RecyclerViewIdlingResource(
-                    activityTestRule.activity.findViewById(R.id.locale_list),
+                    composeTestRule.activity.findViewById(R.id.locale_list),
                     2,
                 ),
             ) {
@@ -477,14 +487,14 @@ class SettingsSearchTest {
         }.openSearch {
             verifyTranslatedFocusedNavigationToolbar("ابحث أو أدخِل عنوانا")
             verifySearchEngineShortcuts(
-                activityTestRule,
+                composeTestRule,
                 "Google",
                 "Bing",
                 "Amazon.com",
                 "DuckDuckGo",
                 "ويكيبيديا (ar)",
             )
-            changeDefaultSearchEngine(activityTestRule, "ويكيبيديا (ar)")
+            changeDefaultSearchEngine(composeTestRule, "ويكيبيديا (ar)")
         }.submitQuery("firefox") {
             verifyUrl("ar.m.wikipedia.org")
         }
@@ -507,7 +517,7 @@ class SettingsSearchTest {
         homeScreen {
         }.openSearch {
             verifySearchEngineShortcuts(
-                activityTestRule,
+                composeTestRule,
                 "Google",
                 "Bing",
                 "Amazon.com",
@@ -515,8 +525,8 @@ class SettingsSearchTest {
                 "eBay",
                 "Wikipedia",
             )
-            scrollToSearchEngineSettings(activityTestRule)
-        }.clickSearchEngineSettings(activityTestRule) {
+            scrollToSearchEngineSettings(composeTestRule)
+        }.clickSearchEngineSettings(composeTestRule) {
             toggleShowSearchShortcuts()
             verifyShowSearchEnginesToggleState(false)
         }
@@ -526,7 +536,7 @@ class SettingsSearchTest {
         homeScreen {
         }.openSearch {
             verifySearchEngineShortcutsAreNotDisplayed(
-                activityTestRule,
+                composeTestRule,
                 "Google",
                 "Bing",
                 "Amazon.com",
@@ -536,7 +546,7 @@ class SettingsSearchTest {
             )
             clickSearchEngineShortcutButton()
             verifySearchEngineShortcuts(
-                activityTestRule,
+                composeTestRule,
                 "Google",
                 "Bing",
                 "Amazon.com",

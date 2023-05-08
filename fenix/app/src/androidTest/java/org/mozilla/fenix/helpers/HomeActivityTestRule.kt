@@ -51,6 +51,7 @@ class HomeActivityTestRule(
         isCookieBannerReductionDialogEnabled: Boolean = !settings.userOptOutOfReEngageCookieBannerDialog,
         isOpenInAppBannerEnabled: Boolean = settings.shouldShowOpenInAppBanner,
         etpPolicy: ETPPolicy = getETPPolicy(settings),
+        enableTabsTrayToCompose: Boolean = settings.enableTabsTrayToCompose,
     ) : this(initialTouchMode, launchActivity, skipOnboarding) {
         this.isHomeOnboardingDialogEnabled = isHomeOnboardingDialogEnabled
         this.isPocketEnabled = isPocketEnabled
@@ -64,6 +65,7 @@ class HomeActivityTestRule(
         this.isCookieBannerReductionDialogEnabled = isCookieBannerReductionDialogEnabled
         this.isOpenInAppBannerEnabled = isOpenInAppBannerEnabled
         this.etpPolicy = etpPolicy
+        this.enableTabsTrayToCompose = enableTabsTrayToCompose
     }
 
     /**
@@ -155,6 +157,7 @@ class HomeActivityIntentTestRule internal constructor(
         isCookieBannerReductionDialogEnabled: Boolean = !settings.userOptOutOfReEngageCookieBannerDialog,
         isOpenInAppBannerEnabled: Boolean = settings.shouldShowOpenInAppBanner,
         etpPolicy: ETPPolicy = getETPPolicy(settings),
+        enableTabsTrayToCompose: Boolean = settings.enableTabsTrayToCompose,
     ) : this(initialTouchMode, launchActivity, skipOnboarding) {
         this.isHomeOnboardingDialogEnabled = isHomeOnboardingDialogEnabled
         this.isPocketEnabled = isPocketEnabled
@@ -168,6 +171,7 @@ class HomeActivityIntentTestRule internal constructor(
         this.isCookieBannerReductionDialogEnabled = isCookieBannerReductionDialogEnabled
         this.isOpenInAppBannerEnabled = isOpenInAppBannerEnabled
         this.etpPolicy = etpPolicy
+        this.enableTabsTrayToCompose = enableTabsTrayToCompose
     }
 
     private val longTapUserPreference = getLongPressTimeout()
@@ -230,6 +234,7 @@ class HomeActivityIntentTestRule internal constructor(
         isDeleteSitePermissionsEnabled = settings.deleteSitePermissions
         isCookieBannerReductionDialogEnabled = !settings.userOptOutOfReEngageCookieBannerDialog
         isOpenInAppBannerEnabled = settings.shouldShowOpenInAppBanner
+        enableTabsTrayToCompose = settings.enableTabsTrayToCompose
         etpPolicy = getETPPolicy(settings)
     }
 

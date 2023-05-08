@@ -58,7 +58,7 @@ class SearchTest {
     lateinit var queryString: String
 
     @get:Rule
-    val activityTestRule = AndroidComposeTestRule(
+    val composeTestRule = AndroidComposeTestRule(
         HomeActivityTestRule(
             skipOnboarding = true,
             isPocketEnabled = false,
@@ -140,8 +140,8 @@ class SearchTest {
         }.goBack {
         }.goBack {
         }.openSearch {
-            scrollToSearchEngineSettings(activityTestRule)
-        }.clickSearchEngineSettings(activityTestRule) {
+            scrollToSearchEngineSettings(composeTestRule)
+        }.clickSearchEngineSettings(composeTestRule) {
             changeDefaultSearchEngine("DuckDuckGo")
         }
 
@@ -194,7 +194,7 @@ class SearchTest {
             clickContextMenuItem("Open link in new tab")
             clickSnackbarButton("SWITCH")
             waitForPageToLoad()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
         }.openTabsListThreeDotMenu {
         }.closeAllTabs {
             verifyRecentlyVisitedSearchGroupDisplayed(true, queryString, 3)
@@ -242,7 +242,7 @@ class SearchTest {
             clickContextMenuItem("Open link in new tab")
             clickSnackbarButton("SWITCH")
             waitForPageToLoad()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
         }.openTabsListThreeDotMenu {
         }.closeAllTabs {
             verifyRecentlyVisitedSearchGroupDisplayed(true, queryString, 3)
@@ -276,7 +276,7 @@ class SearchTest {
             pressBack()
             clickPageObject(itemContainingText("Link 2"))
             waitForPageToLoad()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
         }.openTabsListThreeDotMenu {
         }.closeAllTabs {
             verifyRecentlyVisitedSearchGroupDisplayed(true, queryString, 3)
@@ -306,12 +306,12 @@ class SearchTest {
             clickContextMenuItem("Open link in private tab")
             longClickPageObject(itemWithText("Link 2"))
             clickContextMenuItem("Open link in private tab")
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
         }.toggleToPrivateTabs {
         }.openTabWithIndex(0) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
         }.openTabWithIndex(1) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
         }.openTabsListThreeDotMenu {
         }.closeAllTabs {
             togglePrivateBrowsingModeOnOff()
@@ -352,7 +352,7 @@ class SearchTest {
             clickContextMenuItem("Open link in new tab")
             clickSnackbarButton("SWITCH")
             waitForPageToLoad()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
         }.openTabsListThreeDotMenu {
         }.closeAllTabs {
             verifyRecentlyVisitedSearchGroupDisplayed(true, queryString, 3)
@@ -360,7 +360,7 @@ class SearchTest {
             clickDeleteHistoryButton(firstPageUrl.toString())
             longTapSelectItem(secondPageUrl)
             multipleSelectionToolbar {
-                openActionBarOverflowOrOptionsMenu(activityTestRule.activity)
+                openActionBarOverflowOrOptionsMenu(composeTestRule.activity)
                 clickMultiSelectionDelete()
             }
             exitMenu()
@@ -399,7 +399,7 @@ class SearchTest {
             clickContextMenuItem("Open link in new tab")
             clickSnackbarButton("SWITCH")
             waitForPageToLoad()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
         }.openTabsListThreeDotMenu {
         }.closeAllTabs {
             verifyRecentlyVisitedSearchGroupDisplayed(true, queryString, 3)
@@ -447,7 +447,7 @@ class SearchTest {
             clickContextMenuItem("Open link in new tab")
             clickSnackbarButton("SWITCH")
             waitForPageToLoad()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
         }.openTabsListThreeDotMenu {
         }.closeAllTabs {
             verifyRecentlyVisitedSearchGroupDisplayed(true, queryString, 3)
@@ -458,14 +458,14 @@ class SearchTest {
         }.openRecentlyVisitedSearchGroupHistoryList(queryString) {
             longTapSelectItem(firstPageUrl)
             longTapSelectItem(secondPageUrl)
-            openActionBarOverflowOrOptionsMenu(activityTestRule.activity)
+            openActionBarOverflowOrOptionsMenu(composeTestRule.activity)
         }
 
         multipleSelectionToolbar {
         }.clickOpenNewTab {
-            verifyNormalModeSelected()
+            verifyNormalModeSelected(composeTestRule)
         }.closeTabDrawer {}
-        openActionBarOverflowOrOptionsMenu(activityTestRule.activity)
+        openActionBarOverflowOrOptionsMenu(composeTestRule.activity)
         multipleSelectionToolbar {
         }.clickOpenPrivateTab {
             verifyPrivateModeSelected()
@@ -500,7 +500,7 @@ class SearchTest {
             clickContextMenuItem("Open link in new tab")
             clickSnackbarButton("SWITCH")
             waitForPageToLoad()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
         }.openTabsListThreeDotMenu {
         }.closeAllTabs {
             verifyRecentlyVisitedSearchGroupDisplayed(true, queryString, 3)

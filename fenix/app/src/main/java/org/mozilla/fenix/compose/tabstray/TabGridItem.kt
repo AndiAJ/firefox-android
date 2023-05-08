@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,6 +36,8 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
@@ -148,16 +151,19 @@ fun TabGridItem(
                         )
                     }
 
-                    Icon(
-                        painter = painterResource(id = R.drawable.mozac_ic_close),
-                        contentDescription = stringResource(id = R.string.close_tab),
-                        tint = FirefoxTheme.colors.iconPrimary,
-                        modifier = Modifier
-                            .clickable { onCloseClick(tab) }
-                            .size(24.dp)
-                            .align(Alignment.CenterVertically),
-
-                    )
+                    IconButton(
+                        onClick = { onCloseClick(tab) },
+                        modifier = Modifier.size(size = 24.dp),
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.mozac_ic_close),
+                            contentDescription = stringResource(
+                                id = R.string.close_tab_title,
+                                tab.content.title,
+                            ),
+                            tint = FirefoxTheme.colors.iconPrimary,
+                        )
+                    }
                 }
 
                 Divider()

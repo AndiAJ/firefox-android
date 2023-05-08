@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
@@ -19,6 +20,7 @@ import org.mozilla.fenix.R
 import org.mozilla.fenix.customannotations.SmokeTest
 import org.mozilla.fenix.ext.bookmarkStorage
 import org.mozilla.fenix.helpers.AndroidAssetDispatcher
+import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
 import org.mozilla.fenix.helpers.HomeActivityTestRule
 import org.mozilla.fenix.helpers.RecyclerViewIdlingResource
 import org.mozilla.fenix.helpers.RetryTestRule
@@ -53,6 +55,21 @@ class BookmarksTest {
     @Rule
     @JvmField
     val retryTestRule = RetryTestRule(3)
+
+    @get:Rule
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                isHomeOnboardingDialogEnabled = false,
+                isJumpBackInCFREnabled = false,
+                isRecentTabsFeatureEnabled = false,
+                isRecentlyVisitedFeatureEnabled = false,
+                isPocketEnabled = false,
+                isWallpaperOnboardingEnabled = false,
+                isTCPCFREnabled = false,
+                enableTabsTrayToCompose = true,
+            ),
+        ) { it.activity }
 
     @Before
     fun setUp() {
@@ -282,7 +299,7 @@ class BookmarksTest {
         }.openThreeDotMenu(defaultWebPage.url) {
         }.clickOpenInNewTab {
             verifyTabTrayIsOpened()
-            verifyNormalModeSelected()
+            verifyNormalModeSelected(composeTestRule)
         }
     }
 
@@ -309,7 +326,7 @@ class BookmarksTest {
             createBookmark(webPages[1].url, "root")
             createBookmark(webPages[2].url, "root")
             createBookmark(webPages[3].url, "sub")
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 
@@ -319,7 +336,7 @@ class BookmarksTest {
         }.openThreeDotMenu("root") {
         }.clickOpenAllInTabs {
             verifyTabTrayIsOpened()
-            verifyNormalModeSelected()
+            verifyNormalModeSelected(composeTestRule)
 
             verifyExistingOpenTabs("Test_Page_2", "Test_Page_3", "Test_Page_4")
 
@@ -347,7 +364,7 @@ class BookmarksTest {
         browserScreen {
             createBookmark(webPages[0].url, "root")
             createBookmark(webPages[1].url, "sub")
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 
@@ -458,7 +475,7 @@ class BookmarksTest {
 
         browserScreen {
             createBookmark(defaultWebPage.url)
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 
@@ -475,7 +492,7 @@ class BookmarksTest {
 
         multipleSelectionToolbar {
         }.clickOpenNewTab {
-            verifyNormalModeSelected()
+            verifyNormalModeSelected(composeTestRule)
             verifyExistingTabList()
         }
     }

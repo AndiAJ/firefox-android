@@ -5,6 +5,7 @@
 package org.mozilla.fenix.ui
 
 import android.content.Context
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -20,7 +21,7 @@ import org.mozilla.fenix.R
 import org.mozilla.fenix.customannotations.SmokeTest
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.helpers.AndroidAssetDispatcher
-import org.mozilla.fenix.helpers.HomeActivityTestRule
+import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
 import org.mozilla.fenix.helpers.RecyclerViewIdlingResource
 import org.mozilla.fenix.helpers.TestAssetHelper
 import org.mozilla.fenix.helpers.TestHelper.longTapSelectItem
@@ -40,7 +41,19 @@ class HistoryTest {
     private lateinit var mDevice: UiDevice
 
     @get:Rule
-    val activityTestRule = HomeActivityTestRule.withDefaultSettingsOverrides()
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                isHomeOnboardingDialogEnabled = false,
+                isJumpBackInCFREnabled = false,
+                isRecentTabsFeatureEnabled = false,
+                isRecentlyVisitedFeatureEnabled = false,
+                isPocketEnabled = false,
+                isWallpaperOnboardingEnabled = false,
+                isTCPCFREnabled = false,
+                enableTabsTrayToCompose = true,
+            ),
+        ) { it.activity }
 
     @Before
     fun setUp() {
@@ -58,7 +71,7 @@ class HistoryTest {
     fun tearDown() {
         mockWebServer.shutdown()
         // Clearing all history data after each test to avoid overlapping data
-        val applicationContext: Context = activityTestRule.activity.applicationContext
+        val applicationContext: Context = composeTestRule.activity.applicationContext
         val historyStorage = PlacesHistoryStorage(applicationContext)
 
         runBlocking {
@@ -90,7 +103,7 @@ class HistoryTest {
         }.openHistory {
             verifyHistoryListExists()
             registerAndCleanupIdlingResources(
-                RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.history_list), 1),
+                RecyclerViewIdlingResource(composeTestRule.activity.findViewById(R.id.history_list), 1),
             ) {
                 verifyHistoryMenuView()
                 verifyVisitedTimeTitle()
@@ -111,7 +124,7 @@ class HistoryTest {
         }.openHistory {
             verifyHistoryListExists()
             registerAndCleanupIdlingResources(
-                RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.history_list), 1),
+                RecyclerViewIdlingResource(composeTestRule.activity.findViewById(R.id.history_list), 1),
             ) {
                 clickDeleteHistoryButton(firstWebPage.url.toString())
             }
@@ -131,7 +144,7 @@ class HistoryTest {
         }.openHistory {
             verifyHistoryListExists()
             registerAndCleanupIdlingResources(
-                RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.history_list), 1),
+                RecyclerViewIdlingResource(composeTestRule.activity.findViewById(R.id.history_list), 1),
             ) {
                 clickDeleteHistoryButton(firstWebPage.url.toString())
             }
@@ -153,7 +166,7 @@ class HistoryTest {
         }.openHistory {
             verifyHistoryListExists()
             registerAndCleanupIdlingResources(
-                RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.history_list), 1),
+                RecyclerViewIdlingResource(composeTestRule.activity.findViewById(R.id.history_list), 1),
             ) {
                 clickDeleteAllHistoryButton()
 
@@ -177,7 +190,7 @@ class HistoryTest {
         }.openHistory {
             verifyHistoryListExists()
             registerAndCleanupIdlingResources(
-                RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.history_list), 1),
+                RecyclerViewIdlingResource(composeTestRule.activity.findViewById(R.id.history_list), 1),
             ) {
                 clickDeleteAllHistoryButton()
             }
@@ -201,7 +214,7 @@ class HistoryTest {
         }.openHistory {
             verifyHistoryListExists()
             registerAndCleanupIdlingResources(
-                RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.history_list), 1),
+                RecyclerViewIdlingResource(composeTestRule.activity.findViewById(R.id.history_list), 1),
             ) {
                 longTapSelectItem(firstWebPage.url)
             }
@@ -225,7 +238,7 @@ class HistoryTest {
         navigationToolbar {
         }.enterURLAndEnterToBrowser(firstWebPage.url) {
             mDevice.waitForIdle()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }
 
@@ -233,17 +246,17 @@ class HistoryTest {
         }.openHistory {
             verifyHistoryListExists()
             registerAndCleanupIdlingResources(
-                RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.history_list), 1),
+                RecyclerViewIdlingResource(composeTestRule.activity.findViewById(R.id.history_list), 1),
             ) {
                 longTapSelectItem(firstWebPage.url)
-                openActionBarOverflowOrOptionsMenu(activityTestRule.activity)
+                openActionBarOverflowOrOptionsMenu(composeTestRule.activity)
             }
         }
 
         multipleSelectionToolbar {
         }.clickOpenNewTab {
             verifyExistingTabList()
-            verifyNormalModeSelected()
+            verifyNormalModeSelected(composeTestRule)
         }
     }
 
@@ -258,10 +271,10 @@ class HistoryTest {
         }.openHistory {
             verifyHistoryListExists()
             registerAndCleanupIdlingResources(
-                RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.history_list), 1),
+                RecyclerViewIdlingResource(composeTestRule.activity.findViewById(R.id.history_list), 1),
             ) {
                 longTapSelectItem(firstWebPage.url)
-                openActionBarOverflowOrOptionsMenu(activityTestRule.activity)
+                openActionBarOverflowOrOptionsMenu(composeTestRule.activity)
             }
         }
 
@@ -287,13 +300,13 @@ class HistoryTest {
         }.openHistory {
             verifyHistoryListExists()
             registerAndCleanupIdlingResources(
-                RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.history_list), 2),
+                RecyclerViewIdlingResource(composeTestRule.activity.findViewById(R.id.history_list), 2),
             ) {
                 verifyHistoryItemExists(true, firstWebPage.url.toString())
                 verifyHistoryItemExists(true, secondWebPage.url.toString())
                 longTapSelectItem(firstWebPage.url)
                 longTapSelectItem(secondWebPage.url)
-                openActionBarOverflowOrOptionsMenu(activityTestRule.activity)
+                openActionBarOverflowOrOptionsMenu(composeTestRule.activity)
             }
         }
 
@@ -317,7 +330,7 @@ class HistoryTest {
         }.openHistory {
             verifyHistoryListExists()
             registerAndCleanupIdlingResources(
-                RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.history_list), 1),
+                RecyclerViewIdlingResource(composeTestRule.activity.findViewById(R.id.history_list), 1),
             ) {
                 longTapSelectItem(firstWebPage.url)
             }
@@ -341,13 +354,13 @@ class HistoryTest {
         }.openNavigationToolbar {
         }.enterURLAndEnterToBrowser(website.url) {
             mDevice.waitForIdle()
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
             closeTab()
         }.openTabDrawer {
         }.openRecentlyClosedTabs {
             waitForListToExist()
             registerAndCleanupIdlingResources(
-                RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.recently_closed_list), 1),
+                RecyclerViewIdlingResource(composeTestRule.activity.findViewById(R.id.recently_closed_list), 1),
             ) {
                 verifyRecentlyClosedTabsMenuView()
             }

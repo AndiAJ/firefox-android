@@ -8,6 +8,15 @@ package org.mozilla.fenix.ui.robots
 
 import android.content.Context
 import android.view.View
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
@@ -33,10 +42,10 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
 import org.hamcrest.CoreMatchers.allOf
-import org.hamcrest.CoreMatchers.anyOf
 import org.hamcrest.CoreMatchers.containsString
 import org.hamcrest.Matcher
 import org.mozilla.fenix.R
+import org.mozilla.fenix.compose.button.fabTestTag
 import org.mozilla.fenix.helpers.Constants.LONG_CLICK_DURATION
 import org.mozilla.fenix.helpers.MatcherHelper.assertItemWithResIdAndTextExists
 import org.mozilla.fenix.helpers.MatcherHelper.assertItemWithResIdExists
@@ -56,6 +65,8 @@ import org.mozilla.fenix.helpers.idlingresource.BottomSheetBehaviorStateIdlingRe
 import org.mozilla.fenix.helpers.isSelected
 import org.mozilla.fenix.helpers.matchers.BottomSheetBehaviorHalfExpandedMaxRatioMatcher
 import org.mozilla.fenix.helpers.matchers.BottomSheetBehaviorStateMatcher
+import org.mozilla.fenix.tabstray.emptyNormalTabListTestTag
+import org.mozilla.fenix.tabstray.normalTabsPageTestTag
 
 /**
  * Implementation of Robot Pattern for the home screen menu.
@@ -71,9 +82,7 @@ class TabDrawerRobot {
             .check(matches(withText(containsString(url))))
     }
 
-    fun verifyNormalBrowsingButtonIsDisplayed() = assertNormalBrowsingButton()
-    fun verifyNormalBrowsingButtonIsSelected(isSelected: Boolean) =
-        assertNormalBrowsingButtonIsSelected(isSelected)
+    fun verifyNormalBrowsingButtonIsDisplayed(rule: ComposeTestRule) = assertNormalBrowsingButton(rule)
 
     fun verifyPrivateBrowsingButtonIsSelected(isSelected: Boolean) =
         assertPrivateBrowsingButtonIsSelected(isSelected)
@@ -81,16 +90,17 @@ class TabDrawerRobot {
     fun verifySyncedTabsButtonIsSelected(isSelected: Boolean) =
         assertSyncedTabsButtonIsSelected(isSelected)
 
-    fun verifyExistingOpenTabs(vararg titles: String) = assertExistingOpenTabs(*titles)
-    fun verifyNoExistingOpenTabs(vararg titles: String) = assertNoExistingOpenTabs(*titles)
+    fun verifyExistingOpenTabs(vararg titles: String, rule: ComposeTestRule) = assertExistingOpenTabs(*titles, rule = rule)
+    fun verifyNoExistingOpenTabs(vararg titles: String, rule: ComposeTestRule) = assertNoExistingOpenTabs(*titles, rule = rule)
     fun verifyCloseTabsButton(title: String) = assertCloseTabsButton(title)
 
     fun verifyExistingTabList() = assertExistingTabList()
 
-    fun verifyNoOpenTabsInNormalBrowsing() = assertNoOpenTabsInNormalBrowsing()
+    fun verifyNoOpenTabsInNormalBrowsing(rule: ComposeTestRule) = assertNoOpenTabsInNormalBrowsing(rule)
     fun verifyNoOpenTabsInPrivateBrowsing() = assertNoOpenTabsInPrivateBrowsing()
     fun verifyPrivateModeSelected() = assertPrivateModeSelected()
-    fun verifyNormalModeSelected() = assertNormalModeSelected()
+    fun verifyNormalModeSelected(rule: ComposeTestRule, isSelected: Boolean = true) =
+        assertNormalModeSelected(rule, isSelected)
     fun verifyNormalBrowsingNewTabButton() = assertNormalBrowsingNewTabButton()
     fun verifyPrivateBrowsingNewTabButton() = assertPrivateBrowsingNewTabButton()
     fun verifyEmptyTabsTrayMenuButtons() = assertEmptyTabsTrayMenuButtons()
@@ -125,21 +135,21 @@ class TabDrawerRobot {
         }
 
     fun swipeTabRight(title: String) {
-        var retries = 0 // number of retries before failing, will stop at 2
-        while (!tabItem(title).waitUntilGone(waitingTimeShort) && retries < 3
-        ) {
-            tab(title).swipeRight(3)
-            retries++
-        }
+//        var retries = 0 // number of retries before failing, will stop at 2
+//        while (!tabItem(title).waitUntilGone(waitingTimeShort) && retries < 3
+//        ) {
+//            tab(title).swipeRight(3)
+//            retries++
+//        }
     }
 
     fun swipeTabLeft(title: String) {
-        var retries = 0 // number of retries before failing, will stop at 2
-        while (!tabItem(title).waitUntilGone(waitingTimeShort) && retries < 3
-        ) {
-            tab(title).swipeLeft(3)
-            retries++
-        }
+//        var retries = 0 // number of retries before failing, will stop at 2
+//        while (!tabItem(title).waitUntilGone(waitingTimeShort) && retries < 3
+//        ) {
+//            tab(title).swipeLeft(3)
+//            retries++
+//        }
     }
 
     fun verifySnackBarText(expectedText: String) {
@@ -259,16 +269,16 @@ class TabDrawerRobot {
             return BrowserRobot.Transition()
         }
 
-        fun openNewTab(interact: SearchRobot.() -> Unit): SearchRobot.Transition {
+        fun openNewTab(rule: ComposeTestRule, interact: SearchRobot.() -> Unit): SearchRobot.Transition {
             mDevice.waitForIdle()
 
-            newTabButton().click()
+            clickTabsTrayFAB(rule)
             SearchRobot().interact()
             return SearchRobot.Transition()
         }
 
-        fun toggleToNormalTabs(interact: TabDrawerRobot.() -> Unit): Transition {
-            normalBrowsingButton().perform(click())
+        fun toggleToNormalTabs(rule: ComposeTestRule, interact: TabDrawerRobot.() -> Unit): Transition {
+            normalBrowsingButton(rule).performClick()
             TabDrawerRobot().interact()
             return Transition()
         }
@@ -286,10 +296,9 @@ class TabDrawerRobot {
             return ThreeDotMenuMainRobot.Transition()
         }
 
-        fun openTab(title: String, interact: BrowserRobot.() -> Unit): BrowserRobot.Transition {
+        fun openTab(title: String, rule: ComposeTestRule, interact: BrowserRobot.() -> Unit): BrowserRobot.Transition {
             scrollToElementByText(title)
-            tabItem(title).waitForExists(waitingTime)
-            tabItem(title).click()
+            tabItem(title, rule).performClick()
 
             BrowserRobot().interact()
             return BrowserRobot.Transition()
@@ -419,39 +428,52 @@ private fun assertCloseTabsButton(title: String) =
             .waitForExists(waitingTime),
     )
 
-private fun normalBrowsingButton() = onView(
-    anyOf(
-        withContentDescription(containsString("open tabs. Tap to switch tabs.")),
-        withContentDescription(containsString("open tab. Tap to switch tabs.")),
-    ),
-)
+private fun normalBrowsingButton(rule: ComposeTestRule) =
+    rule.onNode(hasTestTag(normalTabsPageTestTag))
 
 private fun privateBrowsingButton() = onView(withContentDescription("Private tabs"))
 private fun syncedTabsButton() = onView(withContentDescription("Synced tabs"))
-private fun newTabButton() =
-    mDevice.findObject(UiSelector().resourceId("$packageName:id/new_tab_button"))
+private fun clickTabsTrayFAB(rule: ComposeTestRule) {
+    tabsTrayFAB(rule)
+        .assertIsDisplayed()
+        .performClick()
+}
+
+fun tabsTrayFAB(rule: ComposeTestRule) = rule.onNode(hasTestTag(fabTestTag))
 
 private fun threeDotMenu() = onView(withId(R.id.tab_tray_overflow))
 
-private fun assertExistingOpenTabs(vararg tabTitles: String) {
-    var retries = 0
-
-    for (title in tabTitles) {
-        while (!tabItem(title).waitForExists(waitingTime) && retries++ < 3) {
-            tabsList
-                .getChildByText(UiSelector().text(title), title, true)
-            assertTrue(
-                tabItem(title).waitForExists(waitingTimeLong),
-            )
-        }
+private fun assertExistingOpenTabs(vararg tabTitles: String, rule: ComposeTestRule) {
+    tabTitles.forEach { title ->
+        tabItem(title, rule).assertExists()
     }
+
+
+//    var retries = 0
+//
+//    for (title in tabTitles) {
+//
+//
+//        rule.waitUntil(timeoutMillis = waitingTime) { tabItem(title, rule) }
+//
+//
+//        while (!tabItem(title, rule).assertExists() && retries++ < 3) {
+//
+//        }
+//
+//        while (!tabItem(title).waitForExists(waitingTime) && retries++ < 3) {
+//            tabsList
+//                .getChildByText(UiSelector().text(title), title, true)
+//            assertTrue(
+//                tabItem(title).waitForExists(waitingTimeLong),
+//            )
+//        }
+//    }
 }
 
-private fun assertNoExistingOpenTabs(vararg tabTitles: String) {
-    for (title in tabTitles) {
-        assertFalse(
-            tabItem(title).waitForExists(waitingTimeLong),
-        )
+private fun assertNoExistingOpenTabs(vararg tabTitles: String, rule: ComposeTestRule) {
+    tabTitles.forEach {  title ->
+        tabItem(title, rule).assertDoesNotExist()
     }
 }
 
@@ -467,13 +489,10 @@ private fun assertExistingTabList() {
     )
 }
 
-private fun assertNoOpenTabsInNormalBrowsing() =
-    onView(
-        allOf(
-            withId(R.id.tab_tray_empty_view),
-            withText(R.string.no_open_tabs_description),
-        ),
-    ).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
+private fun assertNoOpenTabsInNormalBrowsing(rule: ComposeTestRule) {
+    rule.onNode(hasTestTag(emptyNormalTabListTestTag))
+        .assertIsDisplayed()
+}
 
 private fun assertNoOpenTabsInPrivateBrowsing() =
     onView(
@@ -503,9 +522,13 @@ private fun assertSelectTabsButton() =
     onView(withText("Select tabs"))
         .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
 
-private fun assertNormalModeSelected() =
-    normalBrowsingButton()
-        .check(matches(ViewMatchers.isSelected()))
+private fun assertNormalModeSelected(rule: ComposeTestRule, isSelected: Boolean) {
+    if (isSelected) {
+        normalBrowsingButton(rule).assertIsSelected()
+    } else {
+        normalBrowsingButton(rule).assertIsNotSelected()
+    }
+}
 
 private fun assertPrivateModeSelected() =
     privateBrowsingButton()
@@ -548,12 +571,8 @@ private fun assertBehaviorState(expectedState: Int) {
         .check(matches(BottomSheetBehaviorStateMatcher(expectedState)))
 }
 
-private fun assertNormalBrowsingButton() {
-    normalBrowsingButton().check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
-}
-
-private fun assertNormalBrowsingButtonIsSelected(isSelected: Boolean) {
-    normalBrowsingButton().check(matches(isSelected(isSelected)))
+private fun assertNormalBrowsingButton(rule: ComposeTestRule) {
+    normalBrowsingButton(rule).assertIsDisplayed()
 }
 
 private fun assertPrivateBrowsingButtonIsSelected(isSelected: Boolean) {
@@ -564,19 +583,15 @@ private fun assertSyncedTabsButtonIsSelected(isSelected: Boolean) {
     syncedTabsButton().check(matches(isSelected(isSelected)))
 }
 
-private val tabsList =
-    UiScrollable(UiSelector().className("androidx.recyclerview.widget.RecyclerView"))
-
 // This Espresso tab selector is used for actions that UIAutomator doesn't handle very well: swipe and long-tap
 private fun tab(title: String) =
     mDevice.findObject(UiSelector().textContains(title))
 
 // This tab selector is used for actions that involve waiting and asserting the existence of the view
-private fun tabItem(title: String) =
-    mDevice.findObject(
-        UiSelector()
-            .textContains(title),
-    )
+@OptIn(ExperimentalTestApi::class)
+private fun tabItem(title: String, rule: ComposeTestRule) =
+    rule.waitUntilExactlyOneExists(hasText(title), timeoutMillis = waitingTime).run { rule.onNodeWithText(title) }
+
 
 private fun tabsCounter() = onView(withId(R.id.tab_button))
 

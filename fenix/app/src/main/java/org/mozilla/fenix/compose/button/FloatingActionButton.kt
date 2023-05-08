@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.compose.button
 
+import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -29,6 +30,9 @@ import org.mozilla.fenix.R
 import org.mozilla.fenix.compose.annotation.LightDarkPreview
 import org.mozilla.fenix.theme.FirefoxTheme
 
+@VisibleForTesting
+const val fabTestTag = "button.fab"
+
 /**
  * Floating action button.
  *
@@ -47,7 +51,7 @@ fun FloatingActionButton(
 ) {
     FloatingActionButton(
         onClick = onClick,
-        modifier = Modifier.testTag("button.fab").then(modifier),
+        modifier = modifier.testTag(fabTestTag),
         backgroundColor = FirefoxTheme.colors.actionPrimary,
         contentColor = FirefoxTheme.colors.textActionPrimary,
     ) {

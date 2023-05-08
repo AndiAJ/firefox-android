@@ -11,6 +11,8 @@ import android.net.Uri
 import android.os.SystemClock
 import android.util.Log
 import android.widget.TimePicker
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -882,7 +884,7 @@ class BrowserRobot {
             return NavigationToolbarRobot.Transition()
         }
 
-        fun openTabDrawer(interact: TabDrawerRobot.() -> Unit): TabDrawerRobot.Transition {
+        fun openTabDrawer(rule: ComposeTestRule, interact: TabDrawerRobot.() -> Unit): TabDrawerRobot.Transition {
             for (i in 1..RETRY_COUNT) {
                 try {
                     mDevice.waitForObjects(
@@ -894,10 +896,7 @@ class BrowserRobot {
                     )
 
                     tabsCounter().click()
-                    assertTrue(
-                        itemWithResId("$packageName:id/new_tab_button")
-                            .waitForExists(waitingTime),
-                    )
+                    tabsTrayFAB(rule).assertIsDisplayed()
 
                     break
                 } catch (e: AssertionError) {
@@ -909,10 +908,7 @@ class BrowserRobot {
                 }
             }
 
-            assertTrue(
-                itemWithResId("$packageName:id/new_tab_button")
-                    .waitForExists(waitingTime),
-            )
+            tabsTrayFAB(rule).assertIsDisplayed()
 
             TabDrawerRobot().interact()
             return TabDrawerRobot.Transition()

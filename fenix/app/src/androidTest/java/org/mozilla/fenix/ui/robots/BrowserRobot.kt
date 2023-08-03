@@ -915,8 +915,21 @@ class BrowserRobot {
     fun fillPdfForm(name: String) {
         // Set PDF form text for the text box
         itemWithResId("pdfjs_internal_id_10R").setText(name)
-        // Click PDF form check box
-        itemWithResId("pdfjs_internal_id_11R").click()
+        mDevice.waitForWindowUpdate(packageName, waitingTime)
+        if (
+            itemWithResId("pdfjs_internal_id_11R").exists().not() &&
+            mDevice
+                .executeShellCommand("dumpsys input_method | grep mInputShown")
+                .contains("mInputShown=true")
+        ) {
+            // Close the keyboard
+            mDevice.pressBack()
+            // Click PDF form check box
+            itemWithResId("pdfjs_internal_id_11R").click()
+        } else {
+            // Click PDF form check box
+            itemWithResId("pdfjs_internal_id_11R").click()
+        }
     }
 
     class Transition {

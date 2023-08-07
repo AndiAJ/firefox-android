@@ -36,6 +36,7 @@ import org.mozilla.fenix.R
 import org.mozilla.fenix.helpers.Constants
 import org.mozilla.fenix.helpers.Constants.LONG_CLICK_DURATION
 import org.mozilla.fenix.helpers.HomeActivityComposeTestRule
+import org.mozilla.fenix.helpers.MatcherHelper.assertItemWithResIdExists
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithResId
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithResIdContainingText
 import org.mozilla.fenix.helpers.SessionLoadedIdlingResource
@@ -139,6 +140,9 @@ class NavigationToolbarRobot {
                     .childSelector(UiSelector().description(engineName)),
             ).waitForExists(waitingTime),
         )
+
+    fun verifySearchSelectorArrowButton() =
+        assertItemWithResIdExists(itemWithResId("$packageName:id/arrow"))
 
     fun verifyTextSelectionOptions(vararg textSelectionOptions: String) {
         for (textSelectionOption in textSelectionOptions) {

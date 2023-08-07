@@ -23,6 +23,7 @@ import org.mozilla.fenix.helpers.Constants.searchEngineCodes
 import org.mozilla.fenix.helpers.HomeActivityTestRule
 import org.mozilla.fenix.helpers.MatcherHelper.itemContainingText
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithText
+import org.mozilla.fenix.helpers.MockBrowserDataHelper.createHistoryItem
 import org.mozilla.fenix.helpers.MockBrowserDataHelper.setCustomSearchEngine
 import org.mozilla.fenix.helpers.SearchDispatcher
 import org.mozilla.fenix.helpers.TestAssetHelper.getGenericAsset
@@ -68,6 +69,7 @@ class SearchTest {
             isRecentTabsFeatureEnabled = false,
             isTCPCFREnabled = false,
             isWallpaperOnboardingEnabled = false,
+            tabsTrayRewriteEnabled = false,
         ),
     ) { it.activity }
 
@@ -617,6 +619,66 @@ class SearchTest {
                 openSearchGroup(queryString)
                 verifyHistoryItemExists(shouldExist = true, item = searchEngineCodes["DuckDuckGo"]!!)
             }
+        }
+    }
+
+    @Test
+    fun verifySearchHistoryItemsTest() {
+        navigationToolbar {
+            verifyDefaultSearchEngine(engineName = "Google")
+            verifySearchSelectorArrowButton()
+            verifySearchBarPlaceholder(text = "Search or enter address")
+        }.clickUrlbar {
+            verifyKeyboardVisibility(isExpectedToBeVisible = true)
+            verifyScanButtonVisibility(visible = true)
+            verifyVoiceSearchButtonVisibility(enabled = true)
+            clickSearchSelectorButton()
+            selectTemporarySearchMethod("History")
+            verifyKeyboardVisibility(isExpectedToBeVisible = true)
+            verifyScanButtonVisibility(visible = false)
+            verifyVoiceSearchButtonVisibility(enabled = true)
+            verifySearchBarPlaceholder(text = "Search history")
+        }
+    }
+
+    @Test
+    fun verifySearchHistoryWithoutBrowsingDataTest() {
+        navigationToolbar {
+        }.clickUrlbar {
+            clickSearchSelectorButton()
+            selectTemporarySearchMethod(searchEngineName = "History")
+            typeSearch(searchTerm = "Mozilla")
+            verifyNoSuggestionsAreDisplayed(rule = activityTestRule, "Mozilla")
+            clickClearButton()
+            verifySearchBarPlaceholder("Search history")
+        }
+    }
+
+    @Test
+    fun verifySearchHistoryWithBrowsingDataTest() {
+        val firstPageUrl = getGenericAsset(searchMockServer, 1)
+        val secondPageUrl = getGenericAsset(searchMockServer, 2)
+
+        createHistoryItem(firstPageUrl.url.toString())
+        createHistoryItem(secondPageUrl.url.toString())
+
+        navigationToolbar {
+        }.clickUrlbar {
+            clickSearchSelectorButton()
+            selectTemporarySearchMethod(searchEngineName = "History")
+            typeSearch(searchTerm = "Mozilla")
+            verifyNoSuggestionsAreDisplayed(rule = activityTestRule, "Mozilla")
+            clickClearButton()
+            typeSearch(searchTerm = "generic")
+            verifyTypedToolbarText("generic")
+            verifyFirefoxSuggestResults(
+                rule = activityTestRule,
+                searchTerm = "generic",
+                firstPageUrl.url.toString(),
+                secondPageUrl.url.toString(),
+            )
+        }.clickSearchSuggestion(firstPageUrl.url.toString()) {
+            verifyUrl(firstPageUrl.url.toString())
         }
     }
 }
